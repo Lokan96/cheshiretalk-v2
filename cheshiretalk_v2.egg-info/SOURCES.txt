@@ -1,0 +1,16 @@
+LICENSE
+README.md
+setup.py
+cheshiretalk_v2.egg-info/PKG-INFO
+cheshiretalk_v2.egg-info/SOURCES.txt
+cheshiretalk_v2.egg-info/dependency_links.txt
+cheshiretalk_v2.egg-info/top_level.txt
+src/__init__.py
+src/main.py
+src/api/__init__.py
+src/api/rooms.py
+src/core/__init__.py
+src/core/crypto.py
+src/core/room.py
+src/ws/__init__.py
+src/ws/manager.py
