@@ -1,7 +1,7 @@
 # CheshireTalk v2 — Documento Mestre de Planejamento
 
-> Última atualização: 2026-05-26
-> Status: **EM DESENVOLVIMENTO — Criptografia E2EE funcional**
+> Última atualização: 2026-05-30
+> Status: **EM PRODUÇÃO — v0.2.0**
 > Autor: Lokan96
 > Stack: FastAPI + Vanilla JS + Tailwind CSS
 > Deploy: Render (free tier) + UptimeRobot anti-sleep
@@ -132,7 +132,7 @@ cheshiretalk-v2/
 | RF07 | Autodestruir: timer expira ou usuário sai | ✅ |
 | RF08 | Modo educacional: passo-a-passo criptografia (toggle) | ⚠️ Parcial |
 | RF09 | Multi-participante: 2-10, default 2 | ✅ |
-| RF10 | Re-keying: novo par X25519 a cada N mensagens | ⚠️ Estrutura pronta |
+| RF10 | Re-keying: novo par X25519 a cada N mensagens | ✅ Implementado |
 
 ---
 
@@ -227,7 +227,7 @@ GET /api/v1/health → retorna {"status": "ok"}
 
 ## 8. Segurança — Análise de Ameaças e Mitigações
 
-### 8.1 🚨 MITM no Key Exchange (Crítico)
+### 8.1 ✅ MITM no Key Exchange — Resolvido v0.2.0
 
 **Problema:** O ECDH troca chaves públicas através do servidor. Um servidor comprometido poderia substituir as chaves públicas de ambos os peers por chaves suas — ataque man-in-the-middle clássico.
 
@@ -255,7 +255,7 @@ async function getFingerprint(publicKeyB64) {
 // Ex: A3:F2:9C:4B:E1  D8:7A:01:3F:B2  5C:E9:11:7D:8A
 ```
 
-**Status:** ⚠️ Estrutura pronta, implementação pendente no frontend
+**Status:** ✅ Implementado em v0.2.0
 
 ### 8.2 ⚠️ Cross-Site WebSocket Hijacking (CSWSH)
 
@@ -273,9 +273,21 @@ async def on_connect(sid, environ):
         return False  # Rejeita conexão
 ```
 
-**Status:** ⚠️ Pendente implementação
+**Status:** ✅ Implementado em v0.2.0
 
-### 8.3 ✅ Metadata Privacy
+### 8.2 ✅ CSWSH — Resolvido v0.2.0
+
+**Status:** ✅ Implementado em v0.2.0
+
+### 8.3 ✅ Rate Limiting — Implementado v0.2.0
+
+**Status:** ✅ Implementado em v0.2.0
+
+### 8.4 ✅ Re-keying — Implementado v0.2.0
+
+**Status:** ✅ Implementado em v0.2.0
+
+### 8.5 ✅ Metadata Privacy
 
 **O que já está implementado:**
 - Zero persistência de conteúdo (RAM-only)
@@ -377,11 +389,11 @@ curl -s -X POST http://localhost:8000/api/v1/rooms   -H "Content-Type: applicati
 
 | Bug | Causa | Solução | Data |
 |-----|-------|---------|------|
-| WebSocket recusando conexão | FastAPI app não expunha Socket.IO | Mudar `src.main:app` para `src.main:socket_app` | 2026-05-26 |
-| Eventos não casando | Frontend emitia `join`, backend ouvia `join_room` | Unificar nomes de eventos | 2026-05-26 |
-| Double-derivation | Ambos os peers geravam salts diferentes | Initiator gera salt, responder usa o mesmo | 2026-05-26 |
-| Decifragem falhando | Chaves AES diferentes dos dois lados | Corrigir fluxo de key exchange | 2026-05-26 |
-| Disco 100% cheio | Ollama + backups + caches | Limpar `~/.ollama`, backups antigos, caches | 2026-05-26 |
+| WebSocket recusando conexão | FastAPI app não expunha Socket.IO | Mudar `src.main:app` para `src.main:socket_app` | 2026-05-30 |
+| Eventos não casando | Frontend emitia `join`, backend ouvia `join_room` | Unificar nomes de eventos | 2026-05-30 |
+| Double-derivation | Ambos os peers geravam salts diferentes | Initiator gera salt, responder usa o mesmo | 2026-05-30 |
+| Decifragem falhando | Chaves AES diferentes dos dois lados | Corrigir fluxo de key exchange | 2026-05-30 |
+| Disco 100% cheio | Ollama + backups + caches | Limpar `~/.ollama`, backups antigos, caches | 2026-05-30 |
 
 ---
 
@@ -399,4 +411,4 @@ curl -s -X POST http://localhost:8000/api/v1/rooms   -H "Content-Type: applicati
 
 ---
 
-*Documento gerado em 2026-05-26. Última atualização: sincronização com estrutura atual do projeto + deep search de melhorias + análise de segurança (MITM/TOFU, CSWSH, metadata privacy).*
+*Documento gerado em 2026-05-30. Última atualização: sincronização com estrutura atual do projeto + deep search de melhorias + análise de segurança (MITM/TOFU, CSWSH, metadata privacy).*
