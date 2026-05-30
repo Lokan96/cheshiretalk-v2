@@ -29,4 +29,13 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
-settings = Settings()
+_settings = None
+
+def get_settings():
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
+
+settings = get_settings()
