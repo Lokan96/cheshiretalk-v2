@@ -6,156 +6,84 @@
     <title>CheshireTalk v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'ct-bg': '#0d1117',
-                        'ct-bg-secondary': '#161b22',
-                        'ct-bg-tertiary': '#21262d',
-                        'ct-border': '#30363d',
-                        'ct-text': '#c9d1d9',
-                        'ct-text-muted': '#8b949e',
-                        'ct-accent': '#58a6ff',
-                        'ct-accent-success': '#3fb950',
-                        'ct-accent-warning': '#d29922',
-                        'ct-accent-error': '#f85149',
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
-        body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { background: #0d1117; color: #c9d1d9; font-family: 'Inter', sans-serif; }
         .screen { min-height: 100vh; }
         .hidden { display: none !important; }
-        .btn-primary { background: linear-gradient(135deg, #1f6feb 0%, #58a6ff 100%); transition: all 0.2s; }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(88,166,255,0.3); }
-        .btn-secondary { background: #21262d; border: 1px solid #30363d; transition: all 0.2s; }
-        .btn-secondary:hover { background: #30363d; }
-        .timer-preset.active { border-color: #58a6ff !important; color: #58a6ff !important; background: rgba(88,166,255,0.1); }
-        .message-self { background: rgba(31,111,235,0.15); margin-left: auto; }
-        .message-peer { background: #21262d; }
-        .crypto-overlay { backdrop-filter: blur(8px); background: rgba(13,17,23,0.95); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-        input, textarea { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; }
-        input:focus, textarea:focus { outline: none; border-color: #58a6ff; }
+        .message { padding: 8px 12px; margin: 4px 0; border-radius: 8px; max-width: 70%; }
+        .message.self { background: #238636; margin-left: auto; }
+        .message.peer { background: #21262d; }
+        .system-message { text-align: center; color: #8b949e; font-size: 0.85em; margin: 8px 0; }
+        .fingerprint-box { font-family: 'JetBrains Mono', monospace; background: #161b22; padding: 16px; border-radius: 8px; border: 1px solid #30363d; }
+        .btn-primary { background: #58a6ff; color: #0d1117; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+        .btn-danger { background: #f85149; color: #fff; padding: 8px 16px; border-radius: 6px; }
+        .btn-success { background: #238636; color: #fff; padding: 8px 16px; border-radius: 6px; }
     </style>
 </head>
 <body>
-    <div id="home-screen" class="screen flex flex-col items-center justify-center p-6">
-        <div class="w-full max-w-md">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1f6feb] to-[#58a6ff] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                </div>
-                <h1 class="text-2xl font-bold text-white mb-1">Comunicação E2EE</h1>
-                <p class="text-sm text-[#8b949e]">Sem persistência. Sem rastros. Zero logs.</p>
+    <div id="screen-home" class="screen flex flex-col items-center justify-center p-8">
+        <h1 class="text-4xl font-bold mb-2 text-[#58a6ff]">CheshireTalk v2</h1>
+        <p class="text-[#8b949e] mb-8">Mensageria segura com E2EE</p>
+        <div class="w-full max-w-md space-y-4">
+            <div>
+                <label class="block text-sm mb-1">Máximo de participantes (2-10)</label>
+                <input type="number" id="max-participants" value="2" min="2" max="10" class="w-full bg-[#21262d] border border-[#30363d] rounded px-3 py-2 text-white">
             </div>
-
-            <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-5 mb-4">
-                <h2 class="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-4">Criar Sala</h2>
-                
-                <div class="mb-4">
-                    <label class="text-xs text-[#8b949e] mb-1 block">Participantes</label>
-                    <input type="range" id="participants-slider" min="2" max="10" value="2" class="w-full accent-[#58a6ff]">
-                    <div class="text-right text-sm text-[#58a6ff] font-mono"><span id="participants-value">2</span></div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="text-xs text-[#8b949e] mb-2 block">Timer de Autodestruição</label>
-                    <div class="grid grid-cols-4 gap-2 mb-2">
-                        <button class="timer-preset active btn-secondary py-2 rounded-lg text-xs font-medium" data-seconds="300">5min</button>
-                        <button class="timer-preset btn-secondary py-2 rounded-lg text-xs font-medium" data-seconds="600">10min</button>
-                        <button class="timer-preset btn-secondary py-2 rounded-lg text-xs font-medium" data-seconds="3600">1h</button>
-                        <button class="timer-preset btn-secondary py-2 rounded-lg text-xs font-medium" data-seconds="86400">24h</button>
-                    </div>
-                    <input type="number" id="timer-custom" placeholder="Segundos (30-86400)" min="30" max="86400" class="w-full px-3 py-2 rounded-lg text-sm">
-                </div>
-
-                <div class="mb-4">
-                    <input type="password" id="room-password" placeholder="Senha (opcional)" class="w-full px-3 py-2 rounded-lg text-sm">
-                </div>
-
-                <div class="flex items-center gap-2 mb-4">
-                    <input type="checkbox" id="forward-secrecy" checked class="accent-[#58a6ff] w-4 h-4">
-                    <label for="forward-secrecy" class="text-xs text-[#8b949e]">Forward Secrecy (re-keying automático)</label>
-                </div>
-
-                <button id="btn-create" class="btn-primary w-full py-3 rounded-lg font-medium text-sm text-white flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Criar Sala
-                </button>
+            <div>
+                <label class="block text-sm mb-1">Timer (segundos)</label>
+                <input type="number" id="ttl-seconds" value="600" min="30" class="w-full bg-[#21262d] border border-[#30363d] rounded px-3 py-2 text-white">
             </div>
-
-            <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-5">
-                <div class="flex gap-2">
-                    <input type="text" id="join-room-id" placeholder="ID da sala (ex: ABC123)" class="flex-1 px-3 py-2 rounded-lg text-sm uppercase">
-                    <input type="password" id="join-password" placeholder="Senha" class="w-24 px-3 py-2 rounded-lg text-sm">
-                    <button id="btn-join" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium text-white">Entrar</button>
-                </div>
-            </div>
-
-            <div id="status-indicator" class="text-center mt-4 text-xs font-mono text-[#8b949e]">Verificando servidor...</div>
+            <button id="btn-create-room" class="btn-primary w-full">Criar Sala</button>
+            <button id="btn-join-room" class="w-full border border-[#30363d] rounded px-3 py-2 hover:bg-[#21262d]">Entrar em Sala</button>
         </div>
     </div>
 
-    <div id="chat-screen" class="screen hidden flex flex-col h-screen">
-        <div class="bg-[#161b22] border-b border-[#30363d] px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse"></div>
-                <div>
-                    <div class="text-sm font-semibold text-white">Sala <span id="room-id-display" class="font-mono text-[#58a6ff]">---</span></div>
-                    <div class="text-xs text-[#8b949e]"><span id="peer-count">0</span> peers • <span id="timer-display" class="font-mono text-[#d29922]">--:--</span></div>
+    <div id="screen-join" class="screen hidden flex flex-col items-center justify-center p-8">
+        <h2 class="text-2xl font-bold mb-6">Entrar em Sala</h2>
+        <div class="w-full max-w-md space-y-4">
+            <input type="text" id="join-room-code" placeholder="Código da sala" class="w-full bg-[#21262d] border border-[#30363d] rounded px-3 py-2 text-white uppercase">
+            <textarea id="join-pubkey" placeholder="Chave pública do criador (Base64)" rows="3" class="w-full bg-[#21262d] border border-[#30363d] rounded px-3 py-2 text-white text-sm font-mono"></textarea>
+            <button id="btn-confirm-join" class="btn-primary w-full">Conectar</button>
+            <button onclick="App.showScreen('home')" class="w-full text-[#8b949e] hover:text-white">← Voltar</button>
+        </div>
+    </div>
+
+    <div id="screen-room" class="screen hidden flex flex-col">
+        <div class="bg-[#161b22] border-b border-[#30363d] p-4 flex justify-between items-center">
+            <div><span class="text-sm text-[#8b949e]">Sala:</span><span id="room-code" class="font-mono font-bold text-[#58a6ff] ml-2">---</span></div>
+            <div class="text-sm text-[#8b949e]"><span id="peer-count">0</span> peers</div>
+        </div>
+        <div class="bg-[#161b22] p-4 border-b border-[#30363d]">
+            <div class="flex gap-4">
+                <div class="flex-shrink-0"><div id="qr-code"></div></div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs text-[#8b949e] mb-1">Sua chave pública:</p>
+                    <p id="my-public-key" class="text-xs font-mono break-all text-[#58a6ff]">---</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button id="btn-show-crypto" class="btn-secondary px-3 py-1.5 rounded-lg text-xs">Crypto</button>
-                <button id="btn-leave" class="text-[#f85149] hover:text-white text-xs px-3 py-1.5">Sair</button>
-            </div>
         </div>
+        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+        <div id="typing-indicator" class="hidden px-4 text-xs text-[#8b949e] italic"></div>
+        <div class="bg-[#161b22] border-t border-[#30363d] p-4 flex gap-2">
+            <input type="text" id="msg-input" placeholder="Mensagem segura..." class="flex-1 bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-white">
+            <button id="btn-send" class="btn-primary">Enviar</button>
+        </div>
+    </div>
 
-        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
-        <div id="typing-indicator" class="px-4 text-xs text-[#8b949e] h-4"></div>
-
-        <div class="bg-[#161b22] border-t border-[#30363d] p-4">
-            <div class="flex gap-2">
-                <input type="text" id="message-input" placeholder="Mensagem cifrada..." class="flex-1 px-4 py-2.5 rounded-lg text-sm" autocomplete="off">
-                <button id="btn-send" class="btn-primary px-4 py-2.5 rounded-lg">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                </button>
-                <button id="btn-rekey" class="btn-secondary px-3 py-2.5 rounded-lg" title="Re-keying manual">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                </button>
+    <div id="fingerprint-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-[#161b22] border border-[#f85149] rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-xl font-bold text-[#f85149] mb-2">⚠️ Verificação de Segurança</h3>
+            <p class="text-sm text-[#8b949e] mb-4">Verifique o fingerprint do peer por canal fora de banda (voz, presencial) antes de confirmar. Isso previne ataques Man-in-the-Middle.</p>
+            <div class="mb-4"><span class="text-xs text-[#8b949e]">Peer ID:</span><span id="fingerprint-peer-id" class="font-mono text-sm ml-2">---</span></div>
+            <div class="fingerprint-box mb-4 text-center text-lg tracking-wider"><pre id="fingerprint-value" class="text-[#3fb950]">---</pre></div>
+            <div class="flex gap-3">
+                <button id="btn-verify-fingerprint" class="btn-success flex-1">✅ Verificado</button>
+                <button id="btn-dismiss-fingerprint" class="btn-danger flex-1">Ignorar</button>
             </div>
         </div>
     </div>
 
-    <div id="qr-modal" class="hidden fixed inset-0 crypto-overlay flex items-center justify-center z-50">
-        <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-6 max-w-sm w-full mx-4">
-            <h3 class="text-lg font-semibold text-white mb-2">Compartilhar Sala</h3>
-            <div id="qr-code" class="bg-white p-4 rounded-lg mb-4 flex items-center justify-center text-[#0d1117] text-xs break-all"></div>
-            <button id="btn-close-qr" class="btn-secondary w-full py-2 rounded-lg text-sm">Fechar</button>
-        </div>
-    </div>
-
-    <div id="crypto-modal" class="hidden fixed inset-0 crypto-overlay flex items-center justify-center z-50">
-        <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h3 class="text-lg font-semibold text-white mb-4">Visualizador Criptográfico</h3>
-            <div class="space-y-3 text-xs font-mono">
-                <div class="border-l-2 border-[#58a6ff] pl-3"><span class="text-[#58a6ff]">[X25519]</span> ECDH key exchange</div>
-                <div class="border-l-2 border-[#58a6ff] pl-3"><span class="text-[#58a6ff]">[HKDF]</span> SHA-256 key derivation</div>
-                <div class="border-l-2 border-[#58a6ff] pl-3"><span class="text-[#58a6ff]">[AES-GCM]</span> 256-bit authenticated encryption</div>
-            </div>
-            <ul id="crypto-steps" class="mt-4 space-y-2 max-h-48 overflow-y-auto"></ul>
-            <button id="btn-close-crypto" class="btn-secondary w-full py-2 rounded-lg text-sm mt-4">Fechar</button>
-        </div>
-    </div>
-
-    <script src="/static/js/app.js"></script>
+    <script src="/js/app.js"></script>
 </body>
 </html>
