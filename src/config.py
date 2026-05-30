@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     DEFAULT_TTL_SECONDS: int = 600
     MAX_TTL_SECONDS: int = 3600
     
+    # Compatibilidade com room.py
+    DEFAULT_ROOM_TTL: int = 600
+    MAX_PARTICIPANTS_PER_ROOM: int = 10
+    REKEYING_THRESHOLD: int = 50
+    REKEYING_TIMEOUT: int = 300
+    MAX_ROOMS: int = 100
+    MIN_ROOM_TTL: int = 30
+    
     class Config:
         env_file = ".env"
 
